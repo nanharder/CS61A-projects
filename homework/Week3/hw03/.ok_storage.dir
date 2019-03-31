@@ -1,0 +1,3 @@
+'has_seven-correct', (0, 70)
+'pingpong-correct', (512, 70)
+'filtered_accumulate-correct', (1024, 70)
