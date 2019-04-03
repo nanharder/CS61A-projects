@@ -99,6 +99,10 @@ def replace_leaf(t, old, new):
     True
     """
     "*** YOUR CODE HERE ***"
+    if is_leaf(t) and label(t) == old:
+        return tree(new, [replace_leaf(b,old,new) for b in branches(t)])
+    else:
+        return tree(label(t), [replace_leaf(b,old,new) for b in branches(t)])
 
 # Mobiles
 
@@ -145,11 +149,13 @@ def weight(size):
     """Construct a weight of some size."""
     assert size > 0
     "*** YOUR CODE HERE ***"
+    return ['weight',size]
 
 def size(w):
     """Select the size of a weight."""
     assert is_weight(w), 'must call size on a weight'
     "*** YOUR CODE HERE ***"
+    return w[1]
 
 def is_weight(w):
     """Whether w is a weight."""
@@ -198,6 +204,9 @@ def balanced(m):
     False
     """
     "*** YOUR CODE HERE ***"
+    torque = length(left(m)) * total_weight(end(left(m))) == length(right(m)) * total_weight(end(right(m)))
+    return all([torque] + [balanced(side) for side in [end(left(m)),end(right(m))] if is_mobile(side)])
+ 
 
 def totals_tree(m):
     """Return a tree representing the mobile with its total weight at the root.
@@ -225,6 +234,11 @@ def totals_tree(m):
           2
     """
     "*** YOUR CODE HERE ***"
+    if is_mobile(m):
+        return tree(total_weight(m),[totals_tree(end(side)) for side in [left(m),right(m)]])
+    else:
+        return tree(total_weight(m))
+
 
 # Mutable functions in Python
 
@@ -249,7 +263,16 @@ def make_counter():
     5
     """
     "*** YOUR CODE HERE ***"
-
+    dic = {}
+    def counter(s):
+        nonlocal dic
+        if s in dic:
+            dic[s] += 1
+            return dic[s]
+        else:
+            dic[s] = 1
+            return dic[s]
+    return counter
 def make_fib():
     """Returns a function that returns the next Fibonacci number
     every time it is called.
@@ -270,6 +293,15 @@ def make_fib():
     12
     """
     "*** YOUR CODE HERE ***"
+    present_num = 0
+    next_num = 1
+    def fib():
+        nonlocal present_num,next_num
+        result = present_num
+        present_num,next_num = next_num, present_num+next_num
+        return result
+    return fib
+
 
 def make_withdraw(balance, password):
     """Return a password-protected withdraw function.
@@ -299,7 +331,21 @@ def make_withdraw(balance, password):
     >>> type(w(10, 'l33t')) == str
     True
     """
+    attempts = []
     "*** YOUR CODE HERE ***"
+    def withdraw(amount,psword):
+        nonlocal balance,password,attempts
+        if len(attempts) == 3:
+            return "Your account is locked. Attempts: {}".format(attempts)
+        if password != psword:
+            attempts.append(psword)
+            return 'Incorrect password'
+        if amount > balance:
+           return 'Insufficient funds'
+        balance = balance - amount
+        return balance
+    return withdraw
+
 
 def make_joint(withdraw, old_password, new_password):
     """Return a password-protected withdraw function that has joint access to
@@ -340,6 +386,16 @@ def make_joint(withdraw, old_password, new_password):
     "Your account is locked. Attempts: ['my', 'secret', 'password']"
     """
     "*** YOUR CODE HERE ***"
+    authentication = withdraw(0,old_password)
+    if type(authentication) == str:
+        return authentication
+    def joint_withdraw(amount,password):
+        nonlocal old_password,new_password,withdraw
+        if password == new_password:
+            return withdraw(amount,old_password)
+        else:
+            return withdraw(amount,password)
+    return joint_withdraw
 
 # Generators
 
@@ -378,11 +434,17 @@ def generate_paths(t, x):
     [[0, 2], [0, 2, 1, 2]]
     """
     "*** YOUR CODE HERE ***"
+    if label(t) == x:
+        yield [label(t)]
+    for branche in branches(t):
+        for path in generate_paths(branche,x):
+            yield [label(t)] + path
+
 
 ###################
 # Extra Questions #
 ###################
-
+#Extra未完成
 def str_interval(x):
     """Return a string representation of interval x."""
     return '{0} to {1}'.format(lower_bound(x), upper_bound(x))
@@ -401,30 +463,34 @@ def interval(a, b):
 def lower_bound(x):
     """Return the lower bound of interval x."""
     "*** YOUR CODE HERE ***"
+    return min(x)
 
 def upper_bound(x):
     """Return the upper bound of interval x."""
     "*** YOUR CODE HERE ***"
+    return max(x)
 
 def mul_interval(x, y):
     """Return the interval that contains the product of any value in x and any
     value in y."""
-    p1 = x[0] * y[0]
-    p2 = x[0] * y[1]
-    p3 = x[1] * y[0]
-    p4 = x[1] * y[1]
-    return [min(p1, p2, p3, p4), max(p1, p2, p3, p4)]
+    p1 = lower_bound(x) * lower_bound(y)
+    p2 = lower_bound(x) * upper_bound(y)
+    p3 = upper_bound(x) * lower_bound(y)
+    p4 = upper_bound(x) * upper_bound(y)
+    return interval(min(p1, p2, p3, p4), max(p1, p2, p3, p4))
 
 def sub_interval(x, y):
     """Return the interval that contains the difference between any value in x
     and any value in y."""
     "*** YOUR CODE HERE ***"
+    return interval(lower_bound(x)-upper_bound(y),upper_bound(x)-lower_bound(y))
 
 def div_interval(x, y):
     """Return the interval that contains the quotient of any value in x divided by
     any value in y. Division is implemented as the multiplication of x by the
     reciprocal of y."""
     "*** YOUR CODE HERE ***"
+    assert lower_bound(y) != 0 and upper_bound(y) != 0
     reciprocal_y = interval(1/upper_bound(y), 1/lower_bound(y))
     return mul_interval(x, reciprocal_y)
 
