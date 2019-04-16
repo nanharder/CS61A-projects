@@ -1,0 +1,7 @@
+'prune_small-correct', (0, 70)
+'compose-all-correct', (512, 70)
+'num_splits-correct', (1024, 70)
+'insert-correct', (1536, 70)
+'nodots-correct', (2048, 70)
+'has-cycle?-correct', (2560, 70)
+'switch-correct', (3072, 70)

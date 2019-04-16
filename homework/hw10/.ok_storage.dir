@@ -1,0 +1,3 @@
+'accumulate-correct', (0, 70)
+'partial-sums-correct', (512, 70)
+'rle-correct', (1024, 70)
